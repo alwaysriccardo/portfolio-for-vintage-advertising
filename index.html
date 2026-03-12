@@ -1036,7 +1036,10 @@
     var RETURN_SPEED = 0.04;
     var FRICTION = 0.88;
     var TEXT = 'AI';
-    var raf;
+    var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    var gyro = { x: 0, y: 0 };
+    var gyroActive = false;
+    var GYRO_STRENGTH = 1.8;
 
     function resize() {
       var rect = canvas.parentElement.getBoundingClientRect();
@@ -1065,7 +1068,7 @@
 
       var data = offCtx.getImageData(0, 0, W, H).data;
       var coords = [];
-      var gap = 5;
+      var gap = isMobile ? 7 : 5;
       for (var y = 0; y < H; y += gap) {
         for (var x = 0; x < W; x += gap) {
           var i = (y * W + x) * 4;
@@ -1089,7 +1092,7 @@
           homeY: c.y,
           vx: 0,
           vy: 0,
-          size: Math.random() * 2 + 1.2,
+          size: isMobile ? Math.random() * 1.8 + 1.4 : Math.random() * 2 + 1.2,
           hue: Math.random() * 60 + 240
         });
       }
@@ -1101,14 +1104,20 @@
       for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
 
-        var dx = mouse.x - p.x;
-        var dy = mouse.y - p.y;
-        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (!isMobile) {
+          var dx = mouse.x - p.x;
+          var dy = mouse.y - p.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < SCATTER_RADIUS && dist > 0) {
+            var force = (SCATTER_RADIUS - dist) / SCATTER_RADIUS * SCATTER_FORCE;
+            p.vx -= (dx / dist) * force;
+            p.vy -= (dy / dist) * force;
+          }
+        }
 
-        if (dist < SCATTER_RADIUS && dist > 0) {
-          var force = (SCATTER_RADIUS - dist) / SCATTER_RADIUS * SCATTER_FORCE;
-          p.vx -= (dx / dist) * force;
-          p.vy -= (dy / dist) * force;
+        if (isMobile && gyroActive) {
+          p.vx += gyro.x * GYRO_STRENGTH;
+          p.vy += gyro.y * GYRO_STRENGTH;
         }
 
         p.vx += (p.homeX - p.x) * RETURN_SPEED;
@@ -1127,32 +1136,49 @@
         ctx.fill();
       }
 
-      raf = requestAnimationFrame(animate);
+      requestAnimationFrame(animate);
     }
 
+    // Desktop: mouse interaction
     function onMouseMove(e) {
       var rect = canvas.getBoundingClientRect();
       mouse.x = e.clientX - rect.left;
       mouse.y = e.clientY - rect.top;
     }
-
     function onMouseLeave() {
       mouse.x = -9999;
       mouse.y = -9999;
     }
 
-    function onTouchMove(e) {
-      if (e.touches.length > 0) {
-        var rect = canvas.getBoundingClientRect();
-        mouse.x = e.touches[0].clientX - rect.left;
-        mouse.y = e.touches[0].clientY - rect.top;
-      }
+    if (!isMobile) {
+      heroEl.addEventListener('mousemove', onMouseMove);
+      heroEl.addEventListener('mouseleave', onMouseLeave);
     }
 
-    heroEl.addEventListener('mousemove', onMouseMove);
-    heroEl.addEventListener('mouseleave', onMouseLeave);
-    heroEl.addEventListener('touchmove', onTouchMove, { passive: true });
-    heroEl.addEventListener('touchend', onMouseLeave);
+    // Mobile: gyroscope tilt
+    if (isMobile) {
+      function initGyro() {
+        window.addEventListener('deviceorientation', function(e) {
+          gyroActive = true;
+          var gamma = e.gamma || 0;
+          var beta = e.beta || 0;
+          gyro.x = Math.max(-1, Math.min(1, gamma / 30));
+          gyro.y = Math.max(-1, Math.min(1, (beta - 45) / 30));
+        }, true);
+      }
+
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        heroEl.addEventListener('touchstart', function requestGyro() {
+          DeviceOrientationEvent.requestPermission().then(function(state) {
+            if (state === 'granted') initGyro();
+          }).catch(function() {});
+          heroEl.removeEventListener('touchstart', requestGyro);
+        }, { once: true });
+      } else {
+        initGyro();
+      }
+    }
 
     window.addEventListener('resize', resize);
     resize();
