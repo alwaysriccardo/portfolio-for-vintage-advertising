@@ -212,6 +212,7 @@
         <div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-tr from-violet-400 via-fuchsia-200 to-blue-200 blur-[100px] opacity-50 animate-float-medium mix-blend-multiply"></div>
         <div class="absolute top-[30%] left-[40%] w-[500px] h-[500px] rounded-full bg-purple-200 blur-[80px] opacity-40 animate-float-slow mix-blend-overlay"></div>
         <div class="absolute top-[20%] right-[20%] w-[400px] h-[400px] rounded-full bg-pink-300/30 blur-[60px] animate-float-medium mix-blend-multiply"></div>
+        <canvas id="particle-canvas" class="absolute inset-0 w-full h-full" style="z-index:1"></canvas>
       </div>
 
       <div class="relative z-10 flex flex-col items-center justify-center text-center px-6 sm:px-12 py-20 sm:py-28 min-h-[700px] sm:min-h-[640px]">
@@ -1017,6 +1018,146 @@
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
+  </script>
+
+  <!-- Interactive AI Particle Field -->
+  <script>
+  (function() {
+    var canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var mouse = { x: -9999, y: -9999 };
+    var heroEl = canvas.closest('.relative');
+    var dpr = window.devicePixelRatio || 1;
+    var W, H;
+    var SCATTER_RADIUS = 120;
+    var SCATTER_FORCE = 8;
+    var RETURN_SPEED = 0.04;
+    var FRICTION = 0.88;
+    var TEXT = 'AI';
+    var raf;
+
+    function resize() {
+      var rect = canvas.parentElement.getBoundingClientRect();
+      W = rect.width;
+      H = rect.height;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildParticles();
+    }
+
+    function getTextPixels() {
+      var size = Math.min(W, H) * 0.45;
+      if (size < 80) size = 80;
+      var offCanvas = document.createElement('canvas');
+      offCanvas.width = W;
+      offCanvas.height = H;
+      var offCtx = offCanvas.getContext('2d');
+      offCtx.fillStyle = '#000';
+      offCtx.font = 'bold ' + size + 'px Inter, sans-serif';
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.fillText(TEXT, W / 2, H / 2);
+
+      var data = offCtx.getImageData(0, 0, W, H).data;
+      var coords = [];
+      var gap = 5;
+      for (var y = 0; y < H; y += gap) {
+        for (var x = 0; x < W; x += gap) {
+          var i = (y * W + x) * 4;
+          if (data[i + 3] > 128) {
+            coords.push({ x: x, y: y });
+          }
+        }
+      }
+      return coords;
+    }
+
+    function buildParticles() {
+      var coords = getTextPixels();
+      particles = [];
+      for (var i = 0; i < coords.length; i++) {
+        var c = coords[i];
+        particles.push({
+          x: c.x + (Math.random() - 0.5) * W,
+          y: c.y + (Math.random() - 0.5) * H,
+          homeX: c.x,
+          homeY: c.y,
+          vx: 0,
+          vy: 0,
+          size: Math.random() * 2 + 1.2,
+          hue: Math.random() * 60 + 240
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+
+      for (var i = 0; i < particles.length; i++) {
+        var p = particles[i];
+
+        var dx = mouse.x - p.x;
+        var dy = mouse.y - p.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < SCATTER_RADIUS && dist > 0) {
+          var force = (SCATTER_RADIUS - dist) / SCATTER_RADIUS * SCATTER_FORCE;
+          p.vx -= (dx / dist) * force;
+          p.vy -= (dy / dist) * force;
+        }
+
+        p.vx += (p.homeX - p.x) * RETURN_SPEED;
+        p.vy += (p.homeY - p.y) * RETURN_SPEED;
+        p.vx *= FRICTION;
+        p.vy *= FRICTION;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        var distHome = Math.sqrt((p.x - p.homeX) * (p.x - p.homeX) + (p.y - p.homeY) * (p.y - p.homeY));
+        var alpha = Math.min(1, 0.3 + distHome * 0.008);
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = 'hsla(' + p.hue + ', 70%, 55%, ' + alpha + ')';
+        ctx.fill();
+      }
+
+      raf = requestAnimationFrame(animate);
+    }
+
+    function onMouseMove(e) {
+      var rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    }
+
+    function onMouseLeave() {
+      mouse.x = -9999;
+      mouse.y = -9999;
+    }
+
+    function onTouchMove(e) {
+      if (e.touches.length > 0) {
+        var rect = canvas.getBoundingClientRect();
+        mouse.x = e.touches[0].clientX - rect.left;
+        mouse.y = e.touches[0].clientY - rect.top;
+      }
+    }
+
+    heroEl.addEventListener('mousemove', onMouseMove);
+    heroEl.addEventListener('mouseleave', onMouseLeave);
+    heroEl.addEventListener('touchmove', onTouchMove, { passive: true });
+    heroEl.addEventListener('touchend', onMouseLeave);
+
+    window.addEventListener('resize', resize);
+    resize();
+    animate();
+  })();
   </script>
 </body>
 </html>
