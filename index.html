@@ -1020,9 +1020,12 @@
     });
   </script>
 
-  <!-- Interactive AI Particle Field -->
+  <!-- Interactive AI Particle Field (desktop only) -->
   <script>
   (function() {
+    var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isMobile) return;
+
     var canvas = document.getElementById('particle-canvas');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
@@ -1031,23 +1034,10 @@
     var heroEl = canvas.closest('.relative');
     var dpr = window.devicePixelRatio || 1;
     var W, H;
-    var TEXT = 'AI';
-    var isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    var time = 0;
-
-    // Desktop config
     var SCATTER_RADIUS = 120;
     var SCATTER_FORCE = 8;
     var RETURN_SPEED = 0.04;
     var FRICTION = 0.88;
-
-    // Mobile config
-    var BREATHE_AMP = 6;
-    var BREATHE_SPEED = 0.008;
-    var DRIFT_AMP = 3;
-    var DRIFT_SPEED = 0.003;
-    var TAP_FORCE = 18;
-    var TAP_RADIUS = 180;
 
     function resize() {
       var rect = canvas.parentElement.getBoundingClientRect();
@@ -1072,17 +1062,12 @@
       offCtx.font = 'bold ' + size + 'px Inter, sans-serif';
       offCtx.textAlign = 'center';
       offCtx.textBaseline = 'middle';
-      offCtx.fillText(TEXT, W / 2, H / 2);
-
+      offCtx.fillText('AI', W / 2, H / 2);
       var data = offCtx.getImageData(0, 0, W, H).data;
       var coords = [];
-      var gap = isMobile ? 7 : 5;
-      for (var y = 0; y < H; y += gap) {
-        for (var x = 0; x < W; x += gap) {
-          var i = (y * W + x) * 4;
-          if (data[i + 3] > 128) {
-            coords.push({ x: x, y: y });
-          }
+      for (var y = 0; y < H; y += 5) {
+        for (var x = 0; x < W; x += 5) {
+          if (data[(y * W + x) * 4 + 3] > 128) coords.push({ x: x, y: y });
         }
       }
       return coords;
@@ -1096,100 +1081,46 @@
         particles.push({
           x: c.x + (Math.random() - 0.5) * W,
           y: c.y + (Math.random() - 0.5) * H,
-          homeX: c.x,
-          homeY: c.y,
-          vx: 0,
-          vy: 0,
-          size: isMobile ? Math.random() * 1.8 + 1.4 : Math.random() * 2 + 1.2,
-          hue: Math.random() * 60 + 240,
-          phase: Math.random() * Math.PI * 2,
-          driftPhase: Math.random() * Math.PI * 2
+          homeX: c.x, homeY: c.y,
+          vx: 0, vy: 0,
+          size: Math.random() * 2 + 1.2,
+          hue: Math.random() * 60 + 240
         });
       }
     }
 
     function animate() {
       ctx.clearRect(0, 0, W, H);
-      time++;
-
       for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
-
-        if (isMobile) {
-          // Breathing: gentle expand/contract from center
-          var cxDiff = p.homeX - W / 2;
-          var cyDiff = p.homeY - H / 2;
-          var breathe = Math.sin(time * BREATHE_SPEED + p.phase);
-          var targetX = p.homeX + cxDiff * breathe * 0.04 + Math.sin(time * DRIFT_SPEED + p.driftPhase) * DRIFT_AMP;
-          var targetY = p.homeY + cyDiff * breathe * 0.04 + Math.cos(time * DRIFT_SPEED * 0.7 + p.driftPhase) * DRIFT_AMP;
-
-          p.vx += (targetX - p.x) * RETURN_SPEED;
-          p.vy += (targetY - p.y) * RETURN_SPEED;
-        } else {
-          // Desktop: mouse scatter
-          var dx = mouse.x - p.x;
-          var dy = mouse.y - p.y;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < SCATTER_RADIUS && dist > 0) {
-            var force = (SCATTER_RADIUS - dist) / SCATTER_RADIUS * SCATTER_FORCE;
-            p.vx -= (dx / dist) * force;
-            p.vy -= (dy / dist) * force;
-          }
-          p.vx += (p.homeX - p.x) * RETURN_SPEED;
-          p.vy += (p.homeY - p.y) * RETURN_SPEED;
+        var dx = mouse.x - p.x, dy = mouse.y - p.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < SCATTER_RADIUS && dist > 0) {
+          var force = (SCATTER_RADIUS - dist) / SCATTER_RADIUS * SCATTER_FORCE;
+          p.vx -= (dx / dist) * force;
+          p.vy -= (dy / dist) * force;
         }
-
-        p.vx *= FRICTION;
-        p.vy *= FRICTION;
-        p.x += p.vx;
-        p.y += p.vy;
-
-        var distHome = Math.sqrt((p.x - p.homeX) * (p.x - p.homeX) + (p.y - p.homeY) * (p.y - p.homeY));
-        var alpha = Math.min(1, 0.3 + distHome * 0.008);
-
+        p.vx += (p.homeX - p.x) * RETURN_SPEED;
+        p.vy += (p.homeY - p.y) * RETURN_SPEED;
+        p.vx *= FRICTION; p.vy *= FRICTION;
+        p.x += p.vx; p.y += p.vy;
+        var dh = Math.sqrt((p.x - p.homeX) * (p.x - p.homeX) + (p.y - p.homeY) * (p.y - p.homeY));
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'hsla(' + p.hue + ', 70%, 55%, ' + alpha + ')';
+        ctx.fillStyle = 'hsla(' + p.hue + ', 70%, 55%, ' + Math.min(1, 0.3 + dh * 0.008) + ')';
         ctx.fill();
       }
-
       requestAnimationFrame(animate);
     }
 
-    // Desktop: mouse
-    if (!isMobile) {
-      heroEl.addEventListener('mousemove', function(e) {
-        var rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-      });
-      heroEl.addEventListener('mouseleave', function() {
-        mouse.x = -9999;
-        mouse.y = -9999;
-      });
-    }
-
-    // Mobile: tap to explode
-    if (isMobile) {
-      heroEl.addEventListener('touchstart', function(e) {
-        if (e.touches.length === 0) return;
-        var rect = canvas.getBoundingClientRect();
-        var tx = e.touches[0].clientX - rect.left;
-        var ty = e.touches[0].clientY - rect.top;
-
-        for (var i = 0; i < particles.length; i++) {
-          var p = particles[i];
-          var dx = p.x - tx;
-          var dy = p.y - ty;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < TAP_RADIUS && dist > 0) {
-            var force = (TAP_RADIUS - dist) / TAP_RADIUS * TAP_FORCE;
-            p.vx += (dx / dist) * force;
-            p.vy += (dy / dist) * force;
-          }
-        }
-      }, { passive: true });
-    }
+    heroEl.addEventListener('mousemove', function(e) {
+      var rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    });
+    heroEl.addEventListener('mouseleave', function() {
+      mouse.x = -9999; mouse.y = -9999;
+    });
 
     window.addEventListener('resize', resize);
     resize();
