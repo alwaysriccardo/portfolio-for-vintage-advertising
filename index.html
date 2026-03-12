@@ -929,11 +929,10 @@
       }
     };
 
-    var currentLang = localStorage.getItem('portfolio-lang') || null;
+    var currentLang = 'en';
 
     function applyLang(lang) {
       currentLang = lang;
-      localStorage.setItem('portfolio-lang', lang);
       document.documentElement.lang = lang;
 
       document.querySelectorAll('[data-i18n]').forEach(function(el) {
@@ -966,12 +965,6 @@
       var next = currentLang === 'en' ? 'ro' : 'en';
       applyLang(next);
     };
-
-    if (currentLang) {
-      applyLang(currentLang);
-      var overlay = document.getElementById('lang-overlay');
-      if (overlay) overlay.classList.add('hidden-overlay');
-    }
   })();
   </script>
 
