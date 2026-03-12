@@ -60,11 +60,6 @@
       opacity: 0;
     }
 
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 30px rgba(147, 51, 234, 0.15); }
-      50% { box-shadow: 0 0 60px rgba(147, 51, 234, 0.3); }
-    }
-
     .ba-container {
       position: relative;
       overflow: hidden;
@@ -107,7 +102,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
     .ba-slider::after {
-      content: '◀ ▶';
+      content: '\25C0 \25B6';
       position: absolute;
       top: 50%;
       left: 50%;
@@ -140,9 +135,44 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
+
+    /* Language picker overlay */
+    #lang-overlay {
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #lang-overlay.hidden-overlay {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    [data-i18n], [data-i18n-html] {
+      transition: opacity 0.15s ease;
+    }
   </style>
 </head>
 <body class="bg-white text-gray-900 selection:bg-purple-200 selection:text-purple-900">
+
+  <!-- ==================== LANGUAGE PICKER OVERLAY ==================== -->
+  <div id="lang-overlay" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+    <div class="bg-white rounded-[32px] p-10 sm:p-14 max-w-md w-full text-center shadow-2xl">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg mx-auto mb-6">
+        R
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 mb-2">Choose your language</h2>
+      <p class="text-sm text-gray-500 mb-8">Alegeți limba preferată</p>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <button onclick="setLang('en')" class="flex-1 group flex items-center justify-center gap-3 bg-gray-900 hover:bg-gray-800 text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <span class="text-2xl">🇬🇧</span>
+          English
+        </button>
+        <button onclick="setLang('ro')" class="flex-1 group flex items-center justify-center gap-3 bg-[#F3F0FF] hover:bg-[#EBE5FF] text-gray-900 py-4 px-6 rounded-2xl font-semibold text-base transition-all hover:scale-[1.02] active:scale-[0.98] border border-purple-100">
+          <span class="text-2xl">🇷🇴</span>
+          Română
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Navigation -->
   <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/50">
@@ -151,17 +181,24 @@
         RGR<span class="opacity-40">_</span>
       </a>
       <div class="hidden md:flex items-center gap-10">
-        <a href="#portfolio" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Portfolio</a>
-        <a href="#skills" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Skills</a>
+        <a href="#portfolio" data-i18n="nav.portfolio" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Portfolio</a>
+        <a href="#skills" data-i18n="nav.skills" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Skills</a>
         <a href="#cv" class="text-base font-normal text-gray-600 hover:text-black transition-colors">CV</a>
-        <a href="#contact" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Contact</a>
+        <a href="#contact" data-i18n="nav.contact" class="text-base font-normal text-gray-600 hover:text-black transition-colors">Contact</a>
       </div>
-      <a href="#contact" class="group inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white pl-5 pr-2 py-2 rounded-full text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
-        <span>Hire Me</span>
-        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-        </div>
-      </a>
+      <div class="flex items-center gap-3">
+        <!-- Language Toggle -->
+        <button id="lang-toggle" onclick="toggleLang()" class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3.5 py-2 rounded-full text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <span id="lang-flag">🇬🇧</span>
+          <span id="lang-label" class="hidden sm:inline text-xs font-semibold text-gray-600">EN</span>
+        </button>
+        <a href="#contact" class="group inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white pl-5 pr-2 py-2 rounded-full text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <span data-i18n="nav.hire">Hire Me</span>
+          <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </div>
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -180,7 +217,7 @@
         <div class="animate-fade-in-up" style="animation-delay: 0s">
           <div class="inline-flex items-center gap-2 bg-white/60 backdrop-blur-md border border-white/40 rounded-full px-5 py-2 mb-8 shadow-sm">
             <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
-            <span class="text-xs font-semibold text-gray-800 tracking-wide uppercase">Graphic Designer · Web Designer · Artist</span>
+            <span data-i18n="hero.badge" class="text-xs font-semibold text-gray-800 tracking-wide uppercase">Graphic Designer · Web Designer · Artist</span>
           </div>
         </div>
 
@@ -192,24 +229,24 @@
           </span>
         </h1>
 
-        <p class="animate-fade-in-up text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl mb-4 font-normal" style="animation-delay: 0.2s">
-          Graphic Designer, Web Designer & Artist specializing in <strong class="font-semibold text-gray-800">eMAG & Shopify product visuals</strong>, social media creatives, and AI-augmented production workflows.
+        <p class="animate-fade-in-up text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl mb-4 font-normal" style="animation-delay: 0.2s" data-i18n-html="hero.subtitle">
+          Graphic Designer, Web Designer &amp; Artist specializing in <strong class="font-semibold text-gray-800">eMAG &amp; Shopify product visuals</strong>, social media creatives, and AI-augmented production workflows.
         </p>
 
-        <p class="animate-fade-in-up text-base text-gray-500 leading-relaxed max-w-xl mb-10" style="animation-delay: 0.25s">
+        <p class="animate-fade-in-up text-base text-gray-500 leading-relaxed max-w-xl mb-10" style="animation-delay: 0.25s" data-i18n="hero.desc">
           I create main images, gallery sets, thumbnails, banners, carousels, and lifestyle compositions that convert browsers into buyers.
         </p>
 
         <div class="animate-fade-in-up flex flex-col sm:flex-row items-center gap-4" style="animation-delay: 0.3s">
           <a href="#portfolio" class="group inline-flex items-center justify-between gap-4 bg-white text-gray-900 pl-7 pr-2.5 py-2.5 rounded-full font-medium text-base shadow-lg shadow-purple-900/5 transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98]">
-            <span>View My Work</span>
+            <span data-i18n="hero.cta">View My Work</span>
             <div class="w-10 h-10 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
               <i data-lucide="arrow-down" class="w-5 h-5 text-gray-900"></i>
             </div>
           </a>
           <a href="#contact" class="group inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium text-base transition-colors">
             <i data-lucide="mail" class="w-4 h-4"></i>
-            Get in Touch
+            <span data-i18n="hero.contact">Get in Touch</span>
           </a>
         </div>
       </div>
@@ -219,95 +256,89 @@
     <section id="portfolio" class="mt-24 sm:mt-32 px-0 sm:px-2">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 reveal-on-scroll">
         <div class="max-w-2xl">
-          <h2 class="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 leading-[1.05]">
-            Before & After
-          </h2>
-          <p class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">
-            From raw photos to polished, publication-ready visuals. Drag the slider to see the transformation.
-          </p>
+          <h2 data-i18n="portfolio.title" class="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 leading-[1.05]">Before &amp; After</h2>
+          <p data-i18n="portfolio.subtitle" class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">From raw photos to polished, publication-ready visuals. Drag the slider to see the transformation.</p>
         </div>
         <div class="inline-flex items-center gap-2 bg-purple-50 text-purple-700 px-4 py-2 rounded-full text-sm font-medium flex-shrink-0">
           <i data-lucide="mouse-pointer-click" class="w-4 h-4"></i>
-          Drag to compare
+          <span data-i18n="portfolio.drag">Drag to compare</span>
         </div>
       </div>
 
-      <!-- Before/After Grid -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        <!-- Project 01: Album Cover - Greek Scene -->
+        <!-- Project 01 -->
         <div class="reveal-on-scroll delay-100">
-          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5" data-before="artwork/01-before.jpeg" data-after="artwork/01-after.jpeg">
-            <img src="artwork/01-after.jpeg" alt="After: Album cover with Greek island scenery" class="ba-after">
+          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5">
+            <img src="artwork/01-after.jpeg" alt="After" class="ba-after">
             <div class="ba-before" style="width: 50%">
-              <img src="artwork/01-before.jpeg" alt="Before: Raw indoor photo">
+              <img src="artwork/01-before.jpeg" alt="Before">
             </div>
             <div class="ba-slider" style="left: 50%"></div>
-            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full">BEFORE</div>
-            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full">AFTER</div>
+            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.before">BEFORE</div>
+            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.after">AFTER</div>
           </div>
           <div class="mt-5 space-y-1 px-1">
-            <h3 class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Background Replacement & Color Grading</h3>
-            <p class="text-sm text-gray-500">Subject isolation, AI-generated background scene, color correction, label overlay</p>
+            <h3 data-i18n="p01.title" class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Background Replacement &amp; Color Grading</h3>
+            <p data-i18n="p01.desc" class="text-sm text-gray-500">Subject isolation, AI-generated background scene, color correction, label overlay</p>
           </div>
         </div>
 
-        <!-- Project 02: Album Cover - Spiderweb Composite -->
+        <!-- Project 02 -->
         <div class="reveal-on-scroll delay-200">
-          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5" data-before="artwork/02-before.png" data-after="artwork/02-after.jpeg">
-            <img src="artwork/02-after.jpeg" alt="After: Professional album cover with spiderweb jacket" class="ba-after">
+          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5">
+            <img src="artwork/02-after.jpeg" alt="After" class="ba-after">
             <div class="ba-before" style="width: 50%">
-              <img src="artwork/02-before.png" alt="Before: Raw phone photo with hoodie">
+              <img src="artwork/02-before.png" alt="Before">
             </div>
             <div class="ba-slider" style="left: 50%"></div>
-            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full">BEFORE</div>
-            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full">AFTER</div>
+            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.before">BEFORE</div>
+            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.after">AFTER</div>
           </div>
           <div class="mt-5 space-y-1 px-1">
-            <h3 class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Multi-Element Composite</h3>
-            <p class="text-sm text-gray-500">Background removal, garment swap, clean white backdrop, label design</p>
+            <h3 data-i18n="p02.title" class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Multi-Element Composite</h3>
+            <p data-i18n="p02.desc" class="text-sm text-gray-500">Background removal, garment swap, clean white backdrop, label design</p>
           </div>
         </div>
 
-        <!-- Project 03: Scene Composite - Night Beach -->
+        <!-- Project 03 -->
         <div class="reveal-on-scroll delay-100">
-          <div class="ba-container aspect-[3/4] rounded-[32px] shadow-lg ring-1 ring-black/5" data-before="artwork/03-before.jpeg" data-after="artwork/03-after.jpg">
-            <img src="artwork/03-after.jpg" alt="After: Dramatic night beach scene" class="ba-after">
+          <div class="ba-container aspect-[3/4] rounded-[32px] shadow-lg ring-1 ring-black/5">
+            <img src="artwork/03-after.jpg" alt="After" class="ba-after">
             <div class="ba-before" style="width: 50%">
-              <img src="artwork/03-before.jpeg" alt="Before: Daytime poolside photo">
+              <img src="artwork/03-before.jpeg" alt="Before">
             </div>
             <div class="ba-slider" style="left: 50%"></div>
-            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full">BEFORE</div>
-            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full">AFTER</div>
+            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.before">BEFORE</div>
+            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.after">AFTER</div>
           </div>
           <div class="mt-5 space-y-1 px-1">
-            <h3 class="text-xl font-semibold text-gray-900 tracking-tight">Lifestyle Scene — Complete Environment Swap</h3>
-            <p class="text-sm text-gray-500">Subject extraction, AI scene generation, night sky composite, color grading, lighting effects</p>
+            <h3 data-i18n="p03.title" class="text-xl font-semibold text-gray-900 tracking-tight">Lifestyle Scene — Complete Environment Swap</h3>
+            <p data-i18n="p03.desc" class="text-sm text-gray-500">Subject extraction, AI scene generation, night sky composite, color grading, lighting effects</p>
           </div>
         </div>
 
-        <!-- Project 04: Album Cover - Accessories -->
+        <!-- Project 04 -->
         <div class="reveal-on-scroll delay-200">
-          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5" data-before="artwork/04-before-element2.jpeg" data-after="artwork/04-after.jpg">
-            <img src="artwork/04-after.jpg" alt="After: Full album cover composition" class="ba-after">
+          <div class="ba-container aspect-square rounded-[32px] shadow-lg ring-1 ring-black/5">
+            <img src="artwork/04-after.jpg" alt="After" class="ba-after">
             <div class="ba-before" style="width: 50%">
-              <img src="artwork/04-before-element2.jpeg" alt="Before: Raw product photo of pendant">
+              <img src="artwork/04-before-element2.jpeg" alt="Before">
             </div>
             <div class="ba-slider" style="left: 50%"></div>
-            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full">BEFORE</div>
-            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full">AFTER</div>
+            <div class="absolute top-5 left-5 z-20 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.before">BEFORE</div>
+            <div class="absolute top-5 right-5 z-20 bg-white/80 backdrop-blur-md text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-full" data-i18n="portfolio.after">AFTER</div>
           </div>
           <div class="mt-5 space-y-1 px-1">
-            <h3 class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Product-to-Art Composition</h3>
-            <p class="text-sm text-gray-500">Raw product photo transformed into full artistic composition with signature overlay</p>
+            <h3 data-i18n="p04.title" class="text-xl font-semibold text-gray-900 tracking-tight">Album Cover — Product-to-Art Composition</h3>
+            <p data-i18n="p04.desc" class="text-sm text-gray-500">Raw product photo transformed into full artistic composition with signature overlay</p>
           </div>
         </div>
       </div>
 
-      <!-- Standalone Artwork Gallery -->
+      <!-- Standalone Artwork -->
       <div class="mt-24 reveal-on-scroll">
-        <h3 class="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900 mb-4">Creative Artwork</h3>
-        <p class="text-lg text-gray-500 font-normal leading-relaxed mb-12">Standalone compositions, editorial mockups, and concept art.</p>
+        <h3 data-i18n="artwork.title" class="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900 mb-4">Creative Artwork</h3>
+        <p data-i18n="artwork.subtitle" class="text-lg text-gray-500 font-normal leading-relaxed mb-12">Standalone compositions, editorial mockups, and concept art.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -317,8 +348,8 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           <div class="mt-4 px-1">
-            <h4 class="text-lg font-semibold text-gray-900">Album Cover Variation</h4>
-            <p class="text-sm text-gray-500">B&W art direction, light leak effects</p>
+            <h4 data-i18n="art01.title" class="text-lg font-semibold text-gray-900">Album Cover Variation</h4>
+            <p data-i18n="art01.desc" class="text-sm text-gray-500">B&amp;W art direction, light leak effects</p>
           </div>
         </div>
 
@@ -328,8 +359,8 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           <div class="mt-4 px-1">
-            <h4 class="text-lg font-semibold text-gray-900">3D Composite Album Art</h4>
-            <p class="text-sm text-gray-500">Chrome 3D elements, typography, photo manipulation</p>
+            <h4 data-i18n="art02.title" class="text-lg font-semibold text-gray-900">3D Composite Album Art</h4>
+            <p data-i18n="art02.desc" class="text-sm text-gray-500">Chrome 3D elements, typography, photo manipulation</p>
           </div>
         </div>
 
@@ -339,8 +370,8 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
           <div class="mt-4 px-1">
-            <h4 class="text-lg font-semibold text-gray-900">Editorial Magazine Cover</h4>
-            <p class="text-sm text-gray-500">TIME-style layout, multi-subject composite, typography</p>
+            <h4 data-i18n="art03.title" class="text-lg font-semibold text-gray-900">Editorial Magazine Cover</h4>
+            <p data-i18n="art03.desc" class="text-sm text-gray-500">TIME-style layout, multi-subject composite, typography</p>
           </div>
         </div>
       </div>
@@ -349,12 +380,8 @@
     <!-- ==================== SKILLS & TOOLS ==================== -->
     <section id="skills" class="mt-24 sm:mt-32">
       <div class="text-center max-w-3xl mx-auto mb-16 reveal-on-scroll">
-        <h2 class="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900">
-          What I Bring to the Table
-        </h2>
-        <p class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">
-          A sharp eye for visuals that sell, powered by modern AI tools integrated into every step of the workflow.
-        </p>
+        <h2 data-i18n="skills.title" class="text-3xl md:text-4xl font-bold tracking-tighter text-gray-900">What I Bring to the Table</h2>
+        <p data-i18n="skills.subtitle" class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">A sharp eye for visuals that sell, powered by modern AI tools integrated into every step of the workflow.</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -362,40 +389,34 @@
           <div class="w-12 h-12 bg-[#EFE9FA] rounded-2xl flex items-center justify-center mb-6">
             <i data-lucide="image" class="w-5 h-5 text-purple-700"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 tracking-tight mb-3">Product Page Visuals</h3>
-          <p class="text-base text-gray-500 leading-relaxed">
-            Main images, gallery sets, infographics, benefit highlights, comparison layouts, and lifestyle frames — optimized for eMAG, Amazon, and Shopify.
-          </p>
+          <h3 data-i18n="skill01.title" class="text-xl font-semibold text-gray-900 tracking-tight mb-3">Product Page Visuals</h3>
+          <p data-i18n="skill01.desc" class="text-base text-gray-500 leading-relaxed">Main images, gallery sets, infographics, benefit highlights, comparison layouts, and lifestyle frames — optimized for eMAG, Amazon, and Shopify.</p>
         </div>
 
         <div class="bg-[#F9F8FF] rounded-[32px] p-8 sm:p-10 flex flex-col items-start h-full reveal-on-scroll delay-200">
           <div class="w-12 h-12 bg-[#EFE9FA] rounded-2xl flex items-center justify-center mb-6">
             <i data-lucide="layout" class="w-5 h-5 text-purple-700"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 tracking-tight mb-3">Social Media Creatives</h3>
-          <p class="text-base text-gray-500 leading-relaxed">
-            Thumbnails, banners, carousels (covers, stories, feed posts, ads). Consistent brand look with reusable templates for rapid launches.
-          </p>
+          <h3 data-i18n="skill02.title" class="text-xl font-semibold text-gray-900 tracking-tight mb-3">Social Media Creatives</h3>
+          <p data-i18n="skill02.desc" class="text-base text-gray-500 leading-relaxed">Thumbnails, banners, carousels (covers, stories, feed posts, ads). Consistent brand look with reusable templates for rapid launches.</p>
         </div>
 
         <div class="bg-[#F9F8FF] rounded-[32px] p-8 sm:p-10 flex flex-col items-start h-full reveal-on-scroll delay-300">
           <div class="w-12 h-12 bg-[#EFE9FA] rounded-2xl flex items-center justify-center mb-6">
             <i data-lucide="sparkles" class="w-5 h-5 text-purple-700"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-900 tracking-tight mb-3">AI-First Workflow</h3>
-          <p class="text-base text-gray-500 leading-relaxed">
-            AI is part of my daily workflow — not a nice-to-have. I generate backgrounds, create variations, upscale, and refine images with AI to ship faster.
-          </p>
+          <h3 data-i18n="skill03.title" class="text-xl font-semibold text-gray-900 tracking-tight mb-3">AI-First Workflow</h3>
+          <p data-i18n="skill03.desc" class="text-base text-gray-500 leading-relaxed">AI is part of my daily workflow — not a nice-to-have. I generate backgrounds, create variations, upscale, and refine images with AI to ship faster.</p>
         </div>
       </div>
 
-      <!-- Tools Section -->
+      <!-- Tools -->
       <div class="mt-16 reveal-on-scroll">
         <div class="bg-gradient-to-br from-gray-900 via-gray-900 to-purple-950 rounded-[40px] p-10 sm:p-16 text-white overflow-hidden relative">
           <div class="absolute -top-[200px] right-[-100px] w-[500px] h-[500px] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none"></div>
           <div class="relative z-10">
-            <h3 class="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Tools & Technologies</h3>
-            <p class="text-gray-400 text-base mb-10 max-w-xl">The AI + design stack I use daily to deliver production-ready assets at speed.</p>
+            <h3 data-i18n="tools.title" class="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Tools &amp; Technologies</h3>
+            <p data-i18n="tools.subtitle" class="text-gray-400 text-base mb-10 max-w-xl">The AI + design stack I use daily to deliver production-ready assets at speed.</p>
             <div class="flex flex-wrap gap-3">
               <span class="tool-pill bg-white/10 backdrop-blur border border-white/10 px-5 py-2.5 rounded-full text-sm font-medium">Adobe Photoshop</span>
               <span class="tool-pill bg-white/10 backdrop-blur border border-white/10 px-5 py-2.5 rounded-full text-sm font-medium">Adobe Firefly</span>
@@ -410,8 +431,8 @@
               <span class="tool-pill bg-white/10 backdrop-blur border border-white/10 px-5 py-2.5 rounded-full text-sm font-medium">Photopea</span>
             </div>
             <div class="mt-8 pt-8 border-t border-white/10">
-              <p class="text-sm text-gray-400 leading-relaxed max-w-2xl">
-                <strong class="text-white font-semibold">360 Product Showcasing:</strong> I use Google Veo to create dynamic 360-degree product showcases, giving customers an immersive view of every product angle — ideal for eMAG & Shopify listings.
+              <p data-i18n-html="tools.veo" class="text-sm text-gray-400 leading-relaxed max-w-2xl">
+                <strong class="text-white font-semibold">360 Product Showcasing:</strong> I use Google Veo to create dynamic 360-degree product showcases, giving customers an immersive view of every product angle — ideal for eMAG &amp; Shopify listings.
               </p>
             </div>
           </div>
@@ -419,54 +440,40 @@
       </div>
     </section>
 
-    <!-- ==================== WHAT YOU GET ==================== -->
+    <!-- ==================== WHY HIRE ME ==================== -->
     <section class="mt-24 sm:mt-32">
       <div class="reveal-on-scroll">
         <div class="relative w-full bg-[#FAFAFF] rounded-[40px] overflow-hidden flex flex-col lg:flex-row min-h-[480px] border border-gray-100/50 shadow-sm">
           <div class="w-full lg:w-1/2 p-10 sm:p-16 flex flex-col justify-center">
             <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 rounded-full px-4 py-1.5 text-xs font-semibold mb-6 w-fit">
               <i data-lucide="target" class="w-3.5 h-3.5"></i>
-              WHY HIRE ME
+              <span data-i18n="hire.badge">WHY HIRE ME</span>
             </div>
-            <h3 class="text-3xl sm:text-4xl font-bold tracking-tighter text-gray-900 mb-6 leading-[1.1]">
-              Visuals that don't just look good — they sell.
-            </h3>
+            <h3 data-i18n="hire.title" class="text-3xl sm:text-4xl font-bold tracking-tighter text-gray-900 mb-6 leading-[1.1]">Visuals that don't just look good — they sell.</h3>
             <ul class="space-y-4">
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Product page main images + full gallery sets (eMAG/Amazon/Shopify style)</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item1" class="text-gray-600">Product page main images + full gallery sets (eMAG/Amazon/Shopify style)</span>
               </li>
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Background removal, retouching, color correction, and quick mockups</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item2" class="text-gray-600">Background removal, retouching, color correction, and quick mockups</span>
               </li>
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Reusable brand templates for fast, consistent launches</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item3" class="text-gray-600">Reusable brand templates for fast, consistent launches</span>
               </li>
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Social media creatives: thumbnails, banners, carousels, stories, ads</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item4" class="text-gray-600">Social media creatives: thumbnails, banners, carousels, stories, ads</span>
               </li>
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Export-optimized assets for every platform (sizes, formats, fast loading)</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item5" class="text-gray-600">Export-optimized assets for every platform (sizes, formats, fast loading)</span>
               </li>
               <li class="flex items-start gap-3">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i>
-                </div>
-                <span class="text-gray-600">Close collaboration with marketing to align visuals with messaging & conversion</span>
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i></div>
+                <span data-i18n="hire.item6" class="text-gray-600">Close collaboration with marketing to align visuals with messaging &amp; conversion</span>
               </li>
             </ul>
           </div>
@@ -482,12 +489,8 @@
     <section id="cv" class="mt-24 sm:mt-32">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 reveal-on-scroll">
         <div class="max-w-2xl">
-          <h2 class="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 leading-[1.05]">
-            Curriculum Vitae
-          </h2>
-          <p class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">
-            My background, experience, and the skills I bring to every project.
-          </p>
+          <h2 class="text-4xl md:text-5xl font-bold tracking-tighter text-gray-900 leading-[1.05]">Curriculum Vitae</h2>
+          <p data-i18n="cv.subtitle" class="text-lg text-gray-500 mt-4 font-normal leading-relaxed">My background, experience, and the skills I bring to every project.</p>
         </div>
       </div>
 
@@ -497,18 +500,16 @@
           <!-- Profile Card -->
           <div class="bg-[#F9F8FF] rounded-[32px] p-8 sm:p-10 reveal-on-scroll delay-100">
             <div class="flex items-center gap-4 mb-6">
-              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                R
-              </div>
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">R</div>
               <div>
                 <h3 class="text-xl font-bold text-gray-900">Riccardo Glisha Radu</h3>
-                <p class="text-sm text-gray-500">Graphic Designer, Web Designer & Artist</p>
+                <p data-i18n="cv.role" class="text-sm text-gray-500">Graphic Designer, Web Designer &amp; Artist</p>
               </div>
             </div>
             <div class="space-y-3 text-sm">
               <div class="flex items-center gap-3 text-gray-600">
                 <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
-                <span>Chișinău, Centru, Lev Tolstoi 74</span>
+                <span>Chișin&#259;u, Centru, Lev Tolstoi 74</span>
               </div>
               <div class="flex items-center gap-3 text-gray-600">
                 <i data-lucide="phone" class="w-4 h-4 text-gray-400 flex-shrink-0"></i>
@@ -531,40 +532,40 @@
 
           <!-- Core Competencies -->
           <div class="bg-[#F9F8FF] rounded-[32px] p-8 sm:p-10 reveal-on-scroll delay-200">
-            <h4 class="text-lg font-bold text-gray-900 mb-5">Core Competencies</h4>
+            <h4 data-i18n="cv.competencies" class="text-lg font-bold text-gray-900 mb-5">Core Competencies</h4>
             <div class="flex flex-wrap gap-2">
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Photo Retouching</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Background Removal</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Color Correction</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Compositing</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Product Photography</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">AI Image Generation</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Brand Identity</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Social Media Design</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">eCommerce Listings</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Template Building</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Typography</span>
+              <span data-i18n="tag.retouching" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Photo Retouching</span>
+              <span data-i18n="tag.bgremoval" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Background Removal</span>
+              <span data-i18n="tag.color" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Color Correction</span>
+              <span data-i18n="tag.compositing" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Compositing</span>
+              <span data-i18n="tag.productphoto" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Product Photography</span>
+              <span data-i18n="tag.aigen" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">AI Image Generation</span>
+              <span data-i18n="tag.brand" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Brand Identity</span>
+              <span data-i18n="tag.social" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Social Media Design</span>
+              <span data-i18n="tag.ecom" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">eCommerce Listings</span>
+              <span data-i18n="tag.template" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Template Building</span>
+              <span data-i18n="tag.typo" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Typography</span>
               <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">360° Product Showcase</span>
               <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Web Design</span>
-              <span class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Fine Art</span>
+              <span data-i18n="tag.art" class="bg-white px-3 py-1.5 rounded-lg text-sm text-gray-700 border border-gray-100">Fine Art</span>
             </div>
           </div>
 
           <!-- Languages -->
           <div class="bg-[#F9F8FF] rounded-[32px] p-8 sm:p-10 reveal-on-scroll delay-300">
-            <h4 class="text-lg font-bold text-gray-900 mb-5">Languages</h4>
+            <h4 data-i18n="cv.languages" class="text-lg font-bold text-gray-900 mb-5">Languages</h4>
             <div class="space-y-3">
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-700">Romanian</span>
-                <span class="text-xs font-medium text-gray-400">Native</span>
+                <span data-i18n="lang.ro" class="text-sm text-gray-700">Romanian</span>
+                <span data-i18n="lang.native" class="text-xs font-medium text-gray-400">Native</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-700">English</span>
-                <span class="text-xs font-medium text-gray-400">Fluent</span>
+                <span data-i18n="lang.en" class="text-sm text-gray-700">English</span>
+                <span data-i18n="lang.fluent" class="text-xs font-medium text-gray-400">Fluent</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-sm text-gray-700">Italian</span>
-                <span class="text-xs font-medium text-gray-400">Conversational</span>
+                <span data-i18n="lang.it" class="text-sm text-gray-700">Italian</span>
+                <span data-i18n="lang.conversational" class="text-xs font-medium text-gray-400">Conversational</span>
               </div>
             </div>
           </div>
@@ -574,55 +575,55 @@
         <div class="lg:col-span-7 space-y-6">
           <!-- Summary -->
           <div class="bg-white rounded-[32px] p-8 sm:p-10 border border-gray-100 reveal-on-scroll delay-100">
-            <h4 class="text-lg font-bold text-gray-900 mb-4">Professional Summary</h4>
-            <p class="text-base text-gray-600 leading-relaxed">
+            <h4 data-i18n="cv.summary" class="text-lg font-bold text-gray-900 mb-4">Professional Summary</h4>
+            <p data-i18n-html="cv.summaryText" class="text-base text-gray-600 leading-relaxed">
               Creative graphic designer, web designer, and artist with hands-on experience in eCommerce visual production, social media creatives, and AI-augmented design workflows. I specialize in creating product page visuals that convert — from main images and gallery sets to infographics, lifestyle frames, and comparison layouts. My approach integrates AI tools (Midjourney, Photoshop AI, Firefly, Google Whisk, Google Veo) into every stage of production to deliver high-quality assets at speed, without compromising on creative quality. I also design and build modern websites — see my work at <a href="https://www.riccardo.ro" target="_blank" class="text-purple-600 hover:text-purple-700 font-medium underline underline-offset-2">www.riccardo.ro</a>.
             </p>
           </div>
 
           <!-- Experience -->
           <div class="bg-white rounded-[32px] p-8 sm:p-10 border border-gray-100 reveal-on-scroll delay-200">
-            <h4 class="text-lg font-bold text-gray-900 mb-6">Experience</h4>
+            <h4 data-i18n="cv.experience" class="text-lg font-bold text-gray-900 mb-6">Experience</h4>
             <div class="space-y-8">
               <div class="relative pl-6 border-l-2 border-purple-200">
                 <div class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-purple-500"></div>
-                <h5 class="text-base font-semibold text-gray-900">Freelance Graphic Designer</h5>
-                <p class="text-sm text-gray-500 mt-0.5">Self-employed — 2022 – Present</p>
+                <h5 data-i18n="exp1.title" class="text-base font-semibold text-gray-900">Freelance Graphic Designer</h5>
+                <p data-i18n="exp1.period" class="text-sm text-gray-500 mt-0.5">Self-employed — 2022 – Present</p>
                 <ul class="mt-3 space-y-2 text-sm text-gray-600">
                   <li class="flex items-start gap-2">
                     <span class="text-purple-400 mt-1">&#8226;</span>
-                    <span>Created album covers, social media creatives, and editorial-style compositions for independent artists and brands</span>
+                    <span data-i18n="exp1.b1">Created album covers, social media creatives, and editorial-style compositions for independent artists and brands</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-purple-400 mt-1">&#8226;</span>
-                    <span>Performed advanced photo retouching: background removal, color grading, multi-element compositing</span>
+                    <span data-i18n="exp1.b2">Performed advanced photo retouching: background removal, color grading, multi-element compositing</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-purple-400 mt-1">&#8226;</span>
-                    <span>Integrated AI tools (Midjourney, Firefly, Google Whisk) to accelerate production timelines by 3x</span>
+                    <span data-i18n="exp1.b3">Integrated AI tools (Midjourney, Firefly, Google Whisk) to accelerate production timelines by 3x</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-purple-400 mt-1">&#8226;</span>
-                    <span>Built reusable templates and brand kits for consistent visual identity across platforms</span>
+                    <span data-i18n="exp1.b4">Built reusable templates and brand kits for consistent visual identity across platforms</span>
                   </li>
                 </ul>
               </div>
               <div class="relative pl-6 border-l-2 border-gray-200">
                 <div class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-gray-300"></div>
-                <h5 class="text-base font-semibold text-gray-900">Visual Content Creator</h5>
-                <p class="text-sm text-gray-500 mt-0.5">Personal Projects & Commissions</p>
+                <h5 data-i18n="exp2.title" class="text-base font-semibold text-gray-900">Visual Content Creator</h5>
+                <p data-i18n="exp2.period" class="text-sm text-gray-500 mt-0.5">Personal Projects &amp; Commissions</p>
                 <ul class="mt-3 space-y-2 text-sm text-gray-600">
                   <li class="flex items-start gap-2">
                     <span class="text-gray-400 mt-1">&#8226;</span>
-                    <span>Designed product-style mockups and lifestyle images for eCommerce presentation</span>
+                    <span data-i18n="exp2.b1">Designed product-style mockups and lifestyle images for eCommerce presentation</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-gray-400 mt-1">&#8226;</span>
-                    <span>Created 360° product showcases using Google Veo for immersive product views</span>
+                    <span data-i18n="exp2.b2">Created 360° product showcases using Google Veo for immersive product views</span>
                   </li>
                   <li class="flex items-start gap-2">
                     <span class="text-gray-400 mt-1">&#8226;</span>
-                    <span>Exported and optimized assets for platform-specific requirements (sizes, formats, loading speed)</span>
+                    <span data-i18n="exp2.b3">Exported and optimized assets for platform-specific requirements (sizes, formats, loading speed)</span>
                   </li>
                 </ul>
               </div>
@@ -631,15 +632,15 @@
 
           <!-- Education -->
           <div class="bg-white rounded-[32px] p-8 sm:p-10 border border-gray-100 reveal-on-scroll delay-300">
-            <h4 class="text-lg font-bold text-gray-900 mb-6">Education & Continuous Learning</h4>
+            <h4 data-i18n="cv.education" class="text-lg font-bold text-gray-900 mb-6">Education &amp; Continuous Learning</h4>
             <div class="space-y-4">
               <div class="flex items-start gap-4">
                 <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
                   <i data-lucide="graduation-cap" class="w-5 h-5 text-purple-600"></i>
                 </div>
                 <div>
-                  <h5 class="text-sm font-semibold text-gray-900">Self-Taught Designer</h5>
-                  <p class="text-sm text-gray-500">Photoshop, Lightroom, AI tools — through practice, online courses, and real client work</p>
+                  <h5 data-i18n="edu1.title" class="text-sm font-semibold text-gray-900">Self-Taught Designer</h5>
+                  <p data-i18n="edu1.desc" class="text-sm text-gray-500">Photoshop, Lightroom, AI tools — through practice, online courses, and real client work</p>
                 </div>
               </div>
               <div class="flex items-start gap-4">
@@ -647,8 +648,8 @@
                   <i data-lucide="brain" class="w-5 h-5 text-purple-600"></i>
                 </div>
                 <div>
-                  <h5 class="text-sm font-semibold text-gray-900">AI Tools Early Adopter</h5>
-                  <p class="text-sm text-gray-500">Active user of Midjourney, Google Whisk, Google Veo, Firefly since their public launch</p>
+                  <h5 data-i18n="edu2.title" class="text-sm font-semibold text-gray-900">AI Tools Early Adopter</h5>
+                  <p data-i18n="edu2.desc" class="text-sm text-gray-500">Active user of Midjourney, Google Whisk, Google Veo, Firefly since their public launch</p>
                 </div>
               </div>
             </div>
@@ -657,7 +658,7 @@
       </div>
     </section>
 
-    <!-- ==================== CONTACT / CTA ==================== -->
+    <!-- ==================== CONTACT ==================== -->
     <section id="contact" class="mt-24 sm:mt-32">
       <div class="reveal-on-scroll">
         <div class="relative bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-700 rounded-[40px] sm:rounded-[60px] overflow-hidden text-white animate-gradient p-10 sm:p-16 md:p-20 text-center">
@@ -670,15 +671,11 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
               </span>
-              <span class="text-xs font-semibold text-white/90 tracking-wide uppercase">Available for hire</span>
+              <span data-i18n="contact.badge" class="text-xs font-semibold text-white/90 tracking-wide uppercase">Available for hire</span>
             </div>
 
-            <h2 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter leading-[1.05] mb-6">
-              Let's create visuals that sell.
-            </h2>
-            <p class="text-lg text-white/70 leading-relaxed mb-10">
-              Ready to bring conversion-driven design to your product pages and social media. Let's talk.
-            </p>
+            <h2 data-i18n="contact.title" class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter leading-[1.05] mb-6">Let's create visuals that sell.</h2>
+            <p data-i18n="contact.subtitle" class="text-lg text-white/70 leading-relaxed mb-10">Ready to bring conversion-driven design to your product pages and social media. Let's talk.</p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <a href="tel:+37360387295" class="group inline-flex items-center gap-3 bg-white text-gray-900 pl-6 pr-3 py-3 rounded-full font-semibold text-base shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all w-full sm:w-auto justify-center">
@@ -706,12 +703,10 @@
       </div>
     </section>
 
-    <!-- ==================== FOOTER ==================== -->
+    <!-- Footer -->
     <div class="relative mt-16">
       <footer class="text-center py-8">
-        <p class="text-sm text-gray-400">
-          &copy; 2026 Riccardo Glisha Radu. Built to impress.
-        </p>
+        <p data-i18n="footer" class="text-sm text-gray-400">&copy; 2026 Riccardo Glisha Radu. Built to impress.</p>
       </footer>
     </div>
   </main>
@@ -720,11 +715,255 @@
     lucide.createIcons();
   </script>
 
+  <!-- ==================== i18n TRANSLATION ENGINE ==================== -->
+  <script>
+  (function() {
+    var T = {
+      en: {
+        'nav.portfolio': 'Portfolio',
+        'nav.skills': 'Skills',
+        'nav.contact': 'Contact',
+        'nav.hire': 'Hire Me',
+        'hero.badge': 'Graphic Designer · Web Designer · Artist',
+        'hero.subtitle': 'Graphic Designer, Web Designer &amp; Artist specializing in <strong class="font-semibold text-gray-800">eMAG &amp; Shopify product visuals</strong>, social media creatives, and AI-augmented production workflows.',
+        'hero.desc': 'I create main images, gallery sets, thumbnails, banners, carousels, and lifestyle compositions that convert browsers into buyers.',
+        'hero.cta': 'View My Work',
+        'hero.contact': 'Get in Touch',
+        'portfolio.title': 'Before & After',
+        'portfolio.subtitle': 'From raw photos to polished, publication-ready visuals. Drag the slider to see the transformation.',
+        'portfolio.drag': 'Drag to compare',
+        'portfolio.before': 'BEFORE',
+        'portfolio.after': 'AFTER',
+        'p01.title': 'Album Cover — Background Replacement & Color Grading',
+        'p01.desc': 'Subject isolation, AI-generated background scene, color correction, label overlay',
+        'p02.title': 'Album Cover — Multi-Element Composite',
+        'p02.desc': 'Background removal, garment swap, clean white backdrop, label design',
+        'p03.title': 'Lifestyle Scene — Complete Environment Swap',
+        'p03.desc': 'Subject extraction, AI scene generation, night sky composite, color grading, lighting effects',
+        'p04.title': 'Album Cover — Product-to-Art Composition',
+        'p04.desc': 'Raw product photo transformed into full artistic composition with signature overlay',
+        'artwork.title': 'Creative Artwork',
+        'artwork.subtitle': 'Standalone compositions, editorial mockups, and concept art.',
+        'art01.title': 'Album Cover Variation',
+        'art01.desc': 'B&W art direction, light leak effects',
+        'art02.title': '3D Composite Album Art',
+        'art02.desc': 'Chrome 3D elements, typography, photo manipulation',
+        'art03.title': 'Editorial Magazine Cover',
+        'art03.desc': 'TIME-style layout, multi-subject composite, typography',
+        'skills.title': 'What I Bring to the Table',
+        'skills.subtitle': 'A sharp eye for visuals that sell, powered by modern AI tools integrated into every step of the workflow.',
+        'skill01.title': 'Product Page Visuals',
+        'skill01.desc': 'Main images, gallery sets, infographics, benefit highlights, comparison layouts, and lifestyle frames — optimized for eMAG, Amazon, and Shopify.',
+        'skill02.title': 'Social Media Creatives',
+        'skill02.desc': 'Thumbnails, banners, carousels (covers, stories, feed posts, ads). Consistent brand look with reusable templates for rapid launches.',
+        'skill03.title': 'AI-First Workflow',
+        'skill03.desc': 'AI is part of my daily workflow — not a nice-to-have. I generate backgrounds, create variations, upscale, and refine images with AI to ship faster.',
+        'tools.title': 'Tools & Technologies',
+        'tools.subtitle': 'The AI + design stack I use daily to deliver production-ready assets at speed.',
+        'tools.veo': '<strong class="text-white font-semibold">360 Product Showcasing:</strong> I use Google Veo to create dynamic 360-degree product showcases, giving customers an immersive view of every product angle — ideal for eMAG &amp; Shopify listings.',
+        'hire.badge': 'WHY HIRE ME',
+        'hire.title': 'Visuals that don\'t just look good — they sell.',
+        'hire.item1': 'Product page main images + full gallery sets (eMAG/Amazon/Shopify style)',
+        'hire.item2': 'Background removal, retouching, color correction, and quick mockups',
+        'hire.item3': 'Reusable brand templates for fast, consistent launches',
+        'hire.item4': 'Social media creatives: thumbnails, banners, carousels, stories, ads',
+        'hire.item5': 'Export-optimized assets for every platform (sizes, formats, fast loading)',
+        'hire.item6': 'Close collaboration with marketing to align visuals with messaging & conversion',
+        'cv.subtitle': 'My background, experience, and the skills I bring to every project.',
+        'cv.role': 'Graphic Designer, Web Designer & Artist',
+        'cv.competencies': 'Core Competencies',
+        'cv.languages': 'Languages',
+        'cv.summary': 'Professional Summary',
+        'cv.summaryText': 'Creative graphic designer, web designer, and artist with hands-on experience in eCommerce visual production, social media creatives, and AI-augmented design workflows. I specialize in creating product page visuals that convert — from main images and gallery sets to infographics, lifestyle frames, and comparison layouts. My approach integrates AI tools (Midjourney, Photoshop AI, Firefly, Google Whisk, Google Veo) into every stage of production to deliver high-quality assets at speed, without compromising on creative quality. I also design and build modern websites — see my work at <a href="https://www.riccardo.ro" target="_blank" class="text-purple-600 hover:text-purple-700 font-medium underline underline-offset-2">www.riccardo.ro</a>.',
+        'cv.experience': 'Experience',
+        'cv.education': 'Education & Continuous Learning',
+        'exp1.title': 'Freelance Graphic Designer',
+        'exp1.period': 'Self-employed — 2022 – Present',
+        'exp1.b1': 'Created album covers, social media creatives, and editorial-style compositions for independent artists and brands',
+        'exp1.b2': 'Performed advanced photo retouching: background removal, color grading, multi-element compositing',
+        'exp1.b3': 'Integrated AI tools (Midjourney, Firefly, Google Whisk) to accelerate production timelines by 3x',
+        'exp1.b4': 'Built reusable templates and brand kits for consistent visual identity across platforms',
+        'exp2.title': 'Visual Content Creator',
+        'exp2.period': 'Personal Projects & Commissions',
+        'exp2.b1': 'Designed product-style mockups and lifestyle images for eCommerce presentation',
+        'exp2.b2': 'Created 360° product showcases using Google Veo for immersive product views',
+        'exp2.b3': 'Exported and optimized assets for platform-specific requirements (sizes, formats, loading speed)',
+        'edu1.title': 'Self-Taught Designer',
+        'edu1.desc': 'Photoshop, Lightroom, AI tools — through practice, online courses, and real client work',
+        'edu2.title': 'AI Tools Early Adopter',
+        'edu2.desc': 'Active user of Midjourney, Google Whisk, Google Veo, Firefly since their public launch',
+        'contact.badge': 'Available for hire',
+        'contact.title': 'Let\'s create visuals that sell.',
+        'contact.subtitle': 'Ready to bring conversion-driven design to your product pages and social media. Let\'s talk.',
+        'footer': '© 2026 Riccardo Glisha Radu. Built to impress.',
+        'tag.retouching': 'Photo Retouching',
+        'tag.bgremoval': 'Background Removal',
+        'tag.color': 'Color Correction',
+        'tag.compositing': 'Compositing',
+        'tag.productphoto': 'Product Photography',
+        'tag.aigen': 'AI Image Generation',
+        'tag.brand': 'Brand Identity',
+        'tag.social': 'Social Media Design',
+        'tag.ecom': 'eCommerce Listings',
+        'tag.template': 'Template Building',
+        'tag.typo': 'Typography',
+        'tag.art': 'Fine Art',
+        'lang.ro': 'Romanian',
+        'lang.en': 'English',
+        'lang.it': 'Italian',
+        'lang.native': 'Native',
+        'lang.fluent': 'Fluent',
+        'lang.conversational': 'Conversational',
+      },
+      ro: {
+        'nav.portfolio': 'Portofoliu',
+        'nav.skills': 'Competențe',
+        'nav.contact': 'Contact',
+        'nav.hire': 'Angajează-mă',
+        'hero.badge': 'Graphic Designer · Web Designer · Artist',
+        'hero.subtitle': 'Graphic Designer, Web Designer și Artist, specializat în <strong class="font-semibold text-gray-800">vizualuri pentru produse eMAG &amp; Shopify</strong>, creative pentru social media și fluxuri de producție augmentate cu AI.',
+        'hero.desc': 'Creez imagini principale, seturi de galerii, thumbnailuri, bannere, caruseluri și compoziții lifestyle care transformă vizitatorii în cumpărători.',
+        'hero.cta': 'Vezi Portofoliul',
+        'hero.contact': 'Contactează-mă',
+        'portfolio.title': 'Înainte și După',
+        'portfolio.subtitle': 'De la fotografii brute la vizualuri finisate, pregătite pentru publicare. Trage sliderul pentru a vedea transformarea.',
+        'portfolio.drag': 'Trage pentru a compara',
+        'portfolio.before': 'ÎNAINTE',
+        'portfolio.after': 'DUPĂ',
+        'p01.title': 'Copertă Album — Înlocuire Fundal și Corecție de Culoare',
+        'p01.desc': 'Izolarea subiectului, scenă de fundal generată cu AI, corecție de culoare, suprapunere etichetă',
+        'p02.title': 'Copertă Album — Compozit Multi-Element',
+        'p02.desc': 'Eliminare fundal, schimbare vestimentație, fundal alb curat, design etichetă',
+        'p03.title': 'Scenă Lifestyle — Schimbare Completă de Mediu',
+        'p03.desc': 'Extracția subiectului, generare scenă AI, compozit cer de noapte, corecție de culoare, efecte de iluminare',
+        'p04.title': 'Copertă Album — Compoziție Produs-la-Artă',
+        'p04.desc': 'Fotografie de produs brută transformată în compoziție artistică completă cu semnătură',
+        'artwork.title': 'Artwork Creativ',
+        'artwork.subtitle': 'Compoziții independente, machete editoriale și artă conceptuală.',
+        'art01.title': 'Variație Copertă Album',
+        'art01.desc': 'Direcție artistică B&W, efecte de scurgere de lumină',
+        'art02.title': 'Artă Album Compozit 3D',
+        'art02.desc': 'Elemente 3D cromate, tipografie, manipulare foto',
+        'art03.title': 'Copertă Revistă Editorială',
+        'art03.desc': 'Layout stil TIME, compozit multi-subiect, tipografie',
+        'skills.title': 'Ce Aduc la Masă',
+        'skills.subtitle': 'Un ochi ascuțit pentru vizualuri care vând, susținut de instrumente AI moderne integrate în fiecare etapă a fluxului de lucru.',
+        'skill01.title': 'Vizualuri Pagini de Produs',
+        'skill01.desc': 'Imagini principale, seturi de galerii, infografice, evidențieri de beneficii, layouturi comparative și cadre lifestyle — optimizate pentru eMAG, Amazon și Shopify.',
+        'skill02.title': 'Creative Social Media',
+        'skill02.desc': 'Thumbnailuri, bannere, caruseluri (coperte, stories, postări feed, ads). Aspect de brand consistent cu template-uri reutilizabile pentru lansări rapide.',
+        'skill03.title': 'Flux de Lucru AI-First',
+        'skill03.desc': 'AI face parte din fluxul meu zilnic — nu e un „nice to have". Generez fundaluri, creez variații, upscalez și rafineze imagini cu AI pentru a livra mai rapid.',
+        'tools.title': 'Instrumente și Tehnologii',
+        'tools.subtitle': 'Stiva AI + design pe care o folosesc zilnic pentru a livra asset-uri gata de producție la viteză.',
+        'tools.veo': '<strong class="text-white font-semibold">Prezentare Produs 360°:</strong> Folosesc Google Veo pentru a crea prezentări dinamice de produse la 360 de grade, oferind clienților o vedere imersivă din orice unghi — ideal pentru listări eMAG și Shopify.',
+        'hire.badge': 'DE CE SĂ MĂ ANGAJEZI',
+        'hire.title': 'Vizualuri care nu doar arată bine — ele vând.',
+        'hire.item1': 'Imagini principale + seturi complete de galerie (stil eMAG/Amazon/Shopify)',
+        'hire.item2': 'Eliminare fundal, retușare, corecție de culoare și mockup-uri rapide',
+        'hire.item3': 'Template-uri de brand reutilizabile pentru lansări rapide și consistente',
+        'hire.item4': 'Creative social media: thumbnailuri, bannere, caruseluri, stories, ads',
+        'hire.item5': 'Asset-uri optimizate pentru export pe orice platformă (dimensiuni, formate, viteză de încărcare)',
+        'hire.item6': 'Colaborare strânsă cu marketingul pentru alinierea vizualurilor cu mesajul și conversia',
+        'cv.subtitle': 'Experiența, parcursul profesional și competențele pe care le aduc în fiecare proiect.',
+        'cv.role': 'Graphic Designer, Web Designer și Artist',
+        'cv.competencies': 'Competențe Principale',
+        'cv.languages': 'Limbi Vorbite',
+        'cv.summary': 'Sumar Profesional',
+        'cv.summaryText': 'Designer grafic creativ, web designer și artist cu experiență practică în producția vizuală pentru eCommerce, creative social media și fluxuri de lucru augmentate cu AI. Sunt specializat în crearea vizualurilor de pagini de produs care convertesc — de la imagini principale și seturi de galerii la infografice, cadre lifestyle și layouturi comparative. Abordarea mea integrează instrumente AI (Midjourney, Photoshop AI, Firefly, Google Whisk, Google Veo) în fiecare etapă de producție pentru a livra asset-uri de înaltă calitate la viteză, fără a compromite calitatea creativă. De asemenea, proiectez și construiesc site-uri web moderne — vezi lucrările mele la <a href="https://www.riccardo.ro" target="_blank" class="text-purple-600 hover:text-purple-700 font-medium underline underline-offset-2">www.riccardo.ro</a>.',
+        'cv.experience': 'Experiență',
+        'cv.education': 'Educație și Învățare Continuă',
+        'exp1.title': 'Designer Grafic Freelancer',
+        'exp1.period': 'Activitate independentă — 2022 – Prezent',
+        'exp1.b1': 'Am creat coperți de album, creative social media și compoziții în stil editorial pentru artiști independenți și branduri',
+        'exp1.b2': 'Am realizat retușare foto avansată: eliminare fundal, corecție de culoare, compozit multi-element',
+        'exp1.b3': 'Am integrat instrumente AI (Midjourney, Firefly, Google Whisk) pentru a accelera termenele de producție de 3 ori',
+        'exp1.b4': 'Am creat template-uri reutilizabile și kituri de brand pentru identitate vizuală consistentă pe toate platformele',
+        'exp2.title': 'Creator de Conținut Vizual',
+        'exp2.period': 'Proiecte Personale și Comenzi',
+        'exp2.b1': 'Am proiectat mockup-uri în stil produs și imagini lifestyle pentru prezentare eCommerce',
+        'exp2.b2': 'Am creat prezentări de produs la 360° folosind Google Veo pentru vizualizări imersive',
+        'exp2.b3': 'Am exportat și optimizat asset-uri pentru cerințele specifice platformelor (dimensiuni, formate, viteză de încărcare)',
+        'edu1.title': 'Designer Autodidact',
+        'edu1.desc': 'Photoshop, Lightroom, instrumente AI — prin practică, cursuri online și lucru real cu clienți',
+        'edu2.title': 'Adoptator Timpuriu Instrumente AI',
+        'edu2.desc': 'Utilizator activ al Midjourney, Google Whisk, Google Veo, Firefly de la lansarea lor publică',
+        'contact.badge': 'Disponibil pentru angajare',
+        'contact.title': 'Hai să creăm vizualuri care vând.',
+        'contact.subtitle': 'Pregătit să aduc design orientat pe conversie pentru paginile de produse și social media. Hai să vorbim.',
+        'footer': '© 2026 Riccardo Glisha Radu. Creat să impresioneze.',
+        'tag.retouching': 'Retușare Foto',
+        'tag.bgremoval': 'Eliminare Fundal',
+        'tag.color': 'Corecție de Culoare',
+        'tag.compositing': 'Compozitare',
+        'tag.productphoto': 'Fotografie de Produs',
+        'tag.aigen': 'Generare Imagini AI',
+        'tag.brand': 'Identitate de Brand',
+        'tag.social': 'Design Social Media',
+        'tag.ecom': 'Listări eCommerce',
+        'tag.template': 'Creare Template-uri',
+        'tag.typo': 'Tipografie',
+        'tag.art': 'Artă Plastică',
+        'lang.ro': 'Română',
+        'lang.en': 'Engleză',
+        'lang.it': 'Italiană',
+        'lang.native': 'Nativă',
+        'lang.fluent': 'Fluent',
+        'lang.conversational': 'Conversațional',
+      }
+    };
+
+    var currentLang = localStorage.getItem('portfolio-lang') || null;
+
+    function applyLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('portfolio-lang', lang);
+      document.documentElement.lang = lang;
+
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (T[lang] && T[lang][key] !== undefined) {
+          el.textContent = T[lang][key];
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n-html');
+        if (T[lang] && T[lang][key] !== undefined) {
+          el.innerHTML = T[lang][key];
+        }
+      });
+
+      var flag = document.getElementById('lang-flag');
+      var label = document.getElementById('lang-label');
+      if (flag) flag.textContent = lang === 'en' ? '\uD83C\uDDEC\uD83C\uDDE7' : '\uD83C\uDDF7\uD83C\uDDF4';
+      if (label) label.textContent = lang === 'en' ? 'EN' : 'RO';
+    }
+
+    window.setLang = function(lang) {
+      applyLang(lang);
+      var overlay = document.getElementById('lang-overlay');
+      if (overlay) overlay.classList.add('hidden-overlay');
+    };
+
+    window.toggleLang = function() {
+      var next = currentLang === 'en' ? 'ro' : 'en';
+      applyLang(next);
+    };
+
+    if (currentLang) {
+      applyLang(currentLang);
+      var overlay = document.getElementById('lang-overlay');
+      if (overlay) overlay.classList.add('hidden-overlay');
+    }
+  })();
+  </script>
+
   <!-- Scroll Reveal -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+    document.addEventListener('DOMContentLoaded', function() {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
             observer.unobserve(entry.target);
@@ -732,43 +971,43 @@
         });
       }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-      document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+      document.querySelectorAll('.reveal-on-scroll').forEach(function(el) { observer.observe(el); });
     });
   </script>
 
   <!-- Before/After Slider -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.ba-container').forEach(container => {
-        const slider = container.querySelector('.ba-slider');
-        const before = container.querySelector('.ba-before');
-        let dragging = false;
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.ba-container').forEach(function(container) {
+        var slider = container.querySelector('.ba-slider');
+        var before = container.querySelector('.ba-before');
+        var dragging = false;
 
         function move(x) {
-          const rect = container.getBoundingClientRect();
-          let pct = ((x - rect.left) / rect.width) * 100;
+          var rect = container.getBoundingClientRect();
+          var pct = ((x - rect.left) / rect.width) * 100;
           pct = Math.max(2, Math.min(98, pct));
           slider.style.left = pct + '%';
           before.style.width = pct + '%';
         }
 
-        container.addEventListener('mousedown', (e) => { dragging = true; move(e.clientX); });
-        window.addEventListener('mousemove', (e) => { if (dragging) { e.preventDefault(); move(e.clientX); } });
-        window.addEventListener('mouseup', () => { dragging = false; });
+        container.addEventListener('mousedown', function(e) { dragging = true; move(e.clientX); });
+        window.addEventListener('mousemove', function(e) { if (dragging) { e.preventDefault(); move(e.clientX); } });
+        window.addEventListener('mouseup', function() { dragging = false; });
 
-        container.addEventListener('touchstart', (e) => { dragging = true; move(e.touches[0].clientX); }, { passive: true });
-        window.addEventListener('touchmove', (e) => { if (dragging) move(e.touches[0].clientX); }, { passive: true });
-        window.addEventListener('touchend', () => { dragging = false; });
+        container.addEventListener('touchstart', function(e) { dragging = true; move(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchmove', function(e) { if (dragging) move(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('touchend', function() { dragging = false; });
       });
     });
   </script>
 
-  <!-- Smooth scroll for anchor links -->
+  <!-- Smooth scroll -->
   <script>
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        var target = document.querySelector(this.getAttribute('href'));
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
